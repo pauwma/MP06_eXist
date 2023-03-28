@@ -1,4 +1,4 @@
-package net.xeill.elpuig;
+package net.xeill.elpuig.Controller;
 
 import javax.xml.xquery.XQConnection;
 import javax.xml.xquery.XQDataSource;
