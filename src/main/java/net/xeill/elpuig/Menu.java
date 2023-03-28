@@ -32,7 +32,7 @@ public class Menu {
             System.out.println("┃  0 -      Salir      - 0  ┃");
             System.out.println("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
             try {
-                option = scannerInt("Elige una opción: ",0,4);
+                option = scannerInt("Elige una opción: ",0,3);
                 validOption = true;
             } catch (Exception e) {
                 System.out.println("ERROR - Opción no válida, por favor introduce un número entero");
@@ -54,7 +54,7 @@ public class Menu {
         boolean cerrarSubmenu = false;
         while (!cerrarSubmenu) {
             System.out.println("\n┌───────────────────────────┐");
-            System.out.println("│       MENU  SELECTS       │");
+            System.out.println("│       MENU   QUERYS       │");
             System.out.println("├───────────────────────────┤");
             System.out.println("│  1 -      Tablas     - 1  │");
             System.out.println("│  2 -    Por texto    - 2  │");
