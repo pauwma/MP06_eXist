@@ -1,0 +1,18 @@
+<library>
+  <book>
+    <title>The Shining</title>
+    <author>Stephen King</author>
+    <year>1977</year>
+  </book>
+  <book>
+    <title>The Lord of the Rings</title>
+    <author>J.R.R. Tolkien</author>
+    <year>1954</year>
+  </book>
+  <book>
+    <title>The Catcher in the Rye</title>
+    <author>J.D. Salinger</author>
+    <year>1951</year>
+  </book>
+</library>
+
