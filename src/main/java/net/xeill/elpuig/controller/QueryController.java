@@ -87,11 +87,32 @@ public class QueryController {
                 String selectedDate = availableDates.get(selectedIndex);
 
                 // Consultar las predicciones para la fecha seleccionada
-                String query = "for $prediccio in doc('/db/apps/foaf/temps.xml')/smc/prediccio/variable where $prediccio/@data = '" + selectedDate + "' return $prediccio";
+                String query = "for $prediccio in /smc/prediccio/variable[@data = '" + selectedDate + "'] return $prediccio";
 
                 XQResultSequence xqrs = controller.executeQuery(query);
                 System.out.println("Predicciones del tiempo para " + selectedDate + ":");
-                controller.printResultSequence(xqrs);
+
+                while (xqrs.next()) {
+                    String result = xqrs.getItemAsString(null);
+                    String data = result.substring(result.indexOf("data=\"") + 6, result.indexOf("\"", result.indexOf("data=\"") + 6));
+                    String dia = result.substring(result.indexOf("dia=\"") + 5, result.indexOf("\"", result.indexOf("dia=\"") + 5));
+                    String tempmin = result.substring(result.indexOf("tempmin=\"") + 9, result.indexOf("\"", result.indexOf("tempmin=\"") + 9));
+                    String tempmax = result.substring(result.indexOf("tempmax=\"") + 9, result.indexOf("\"", result.indexOf("tempmax=\"") + 9));
+                    String simbolmati = result.substring(result.indexOf("simbolmati=\"") + 12, result.indexOf("\"", result.indexOf("simbolmati=\"") + 12));
+                    String simboltarda = result.substring(result.indexOf("simboltarda=\"") + 13, result.indexOf("\"", result.indexOf("simboltarda=\"") + 13));
+                    String intensitatprecimati = result.substring(result.indexOf("intensitatprecimati=\"") + 22, result.indexOf("\"", result.indexOf("intensitatprecimati=\"") + 22));
+                    String intensitatprecitarda = result.substring(result.indexOf("intensitatprecitarda=\"") + 23, result.indexOf("\"", result.indexOf("intensitatprecitarda=\"") + 23));
+                    String precipitacioacumuladamati = result.substring(result.indexOf("precipitacioacumuladamati=\"") + 28, result.indexOf("\"", result.indexOf("precipitacioacumuladamati=\"") + 28));
+                    String precipitacioacumuladatarda = result.substring(result.indexOf("precipitacioacumuladatarda=\"") + 29, result.indexOf("\"", result.indexOf("precipitacioacumuladatarda=\"") + 29));
+                    String probprecipitaciomati = result.substring(result.indexOf("probprecipitaciomati=\"") + 22, result.indexOf("\"", result.indexOf("probprecipitaciomati=\"") + 22));
+                    String probprecipitaciotarda = result.substring(result.indexOf("probprecipitaciotarda=\"") + 23, result.indexOf("\"", result.indexOf("probprecipitaciotarda=\"") + 23));
+                    String probcalamati = result.substring(result.indexOf("probcalamati=\"") + 14, result.indexOf("\"", result.indexOf("probcalamati=\"") + 14));
+                    String probcalatarda = result.substring(result.indexOf("probcalatarda=\"") + 15, result.indexOf("\"", result.indexOf("probcalatarda=\"") + 15));
+                    System.out.printf("Fecha: %s, Día: %s, Temperatura mínima: %s, Temperatura máxima: %s, Símbolo mañana: %s, Símbolo tarde: %s, Intensidad precipitación mañana: %s, Intensidad precipitación tarde: %s, Acumulación precipitación mañana: %s, Acumulación precipitación tarde: %s, Probabilidad de precipitación mañana: %s, Probabilidad de precipitación tarde: %s, Probabilidad de calima mañana: %s%n",
+                            data, dia, tempmin, tempmax, simbolmati, simboltarda, intensitatprecimati, intensitatprecitarda,
+                            precipitacioacumuladamati, precipitacioacumuladatarda, probprecipitaciomati, probprecipitaciotarda,
+                            probcalamati);
+                }
             } else {
                 System.out.println("Selección inválida. Por favor, intenta de nuevo.");
             }
