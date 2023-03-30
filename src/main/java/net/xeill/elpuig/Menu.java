@@ -1,5 +1,8 @@
 package net.xeill.elpuig;
 
+import net.xeill.elpuig.controller.ExistController;
+import net.xeill.elpuig.controller.QueryController;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
@@ -8,10 +11,14 @@ import java.util.Scanner;
 public class Menu {
     private int option;
     private boolean close;
+    public ExistController controller;
 
+    private QueryController queryController;
 
     public Menu() {
         super();
+        this.controller = new ExistController();
+        queryController = new QueryController(controller);
     }
 
     /**
@@ -66,6 +73,7 @@ public class Menu {
                 if (option >= 0 && option <= 3) {
                     switch (option){
                         case 1:
+                            queryController.showPredictionsForSpecificDate();
                             break;
                         case 2:
                             break;
