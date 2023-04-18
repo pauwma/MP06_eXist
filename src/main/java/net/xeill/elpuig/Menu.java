@@ -92,7 +92,6 @@ public class Menu {
         }
         return option;
     }
-
     /**
      * Muestra el menú del control de las funciones de updates y permite elegir una opción.
      *

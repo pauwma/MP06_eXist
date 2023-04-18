@@ -1,20 +1,17 @@
 package net.xeill.elpuig.controller;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQResultSequence;
-import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Node;
 
 public class QueryController {
 
@@ -23,45 +20,6 @@ public class QueryController {
     public QueryController(ExistController controller) {
         this.controller = controller;
     }
-
-    /*
-    public List<String> getWeatherPredictionsByDate(String date) throws ParserConfigurationException {
-        List<String> predictions = new ArrayList<>();
-
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(controller.getXmlInputStream());
-
-            NodeList nodeList = document.getElementsByTagName("prediction");
-
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element element = (Element) node;
-                    String predictionDate = element.getAttribute("date");
-
-                    if (predictionDate.equals(date)) {
-                        String city = element.getElementsByTagName("city").item(0).getTextContent();
-                        String minTemp = element.getElementsByTagName("minTemp").item(0).getTextContent();
-                        String maxTemp = element.getElementsByTagName("maxTemp").item(0).getTextContent();
-                        String windSpeed = element.getElementsByTagName("windSpeed").item(0).getTextContent();
-                        String precipitationProbability = element.getElementsByTagName("precipitationProbability").item(0).getTextContent();
-
-                        String formattedPrediction = String.format("Ciudad: %s | Fecha: %s | Temperatura mínima: %s | Temperatura máxima: %s | Velocidad del viento: %s | Probabilidad de precipitaciones: %s",
-                                city, predictionDate, minTemp, maxTemp, windSpeed, precipitationProbability);
-                        predictions.add(formattedPrediction);
-                    }
-                }
-            }
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return predictions;
-    }*/
-
 
     public void showPredictionsForSpecificDate() {
         try {
@@ -92,32 +50,52 @@ public class QueryController {
                 XQResultSequence xqrs = controller.executeQuery(query);
                 System.out.println("Predicciones del tiempo para " + selectedDate + ":");
 
+                /// Formatear e imprimir el XML
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
                 while (xqrs.next()) {
-                    String result = xqrs.getItemAsString(null);
-                    String data = result.substring(result.indexOf("data=\"") + 6, result.indexOf("\"", result.indexOf("data=\"") + 6));
-                    String dia = result.substring(result.indexOf("dia=\"") + 5, result.indexOf("\"", result.indexOf("dia=\"") + 5));
-                    String tempmin = result.substring(result.indexOf("tempmin=\"") + 9, result.indexOf("\"", result.indexOf("tempmin=\"") + 9));
-                    String tempmax = result.substring(result.indexOf("tempmax=\"") + 9, result.indexOf("\"", result.indexOf("tempmax=\"") + 9));
-                    String simbolmati = result.substring(result.indexOf("simbolmati=\"") + 12, result.indexOf("\"", result.indexOf("simbolmati=\"") + 12));
-                    String simboltarda = result.substring(result.indexOf("simboltarda=\"") + 13, result.indexOf("\"", result.indexOf("simboltarda=\"") + 13));
-                    String intensitatprecimati = result.substring(result.indexOf("intensitatprecimati=\"") + 22, result.indexOf("\"", result.indexOf("intensitatprecimati=\"") + 22));
-                    String intensitatprecitarda = result.substring(result.indexOf("intensitatprecitarda=\"") + 23, result.indexOf("\"", result.indexOf("intensitatprecitarda=\"") + 23));
-                    String precipitacioacumuladamati = result.substring(result.indexOf("precipitacioacumuladamati=\"") + 28, result.indexOf("\"", result.indexOf("precipitacioacumuladamati=\"") + 28));
-                    String precipitacioacumuladatarda = result.substring(result.indexOf("precipitacioacumuladatarda=\"") + 29, result.indexOf("\"", result.indexOf("precipitacioacumuladatarda=\"") + 29));
-                    String probprecipitaciomati = result.substring(result.indexOf("probprecipitaciomati=\"") + 22, result.indexOf("\"", result.indexOf("probprecipitaciomati=\"") + 22));
-                    String probprecipitaciotarda = result.substring(result.indexOf("probprecipitaciotarda=\"") + 23, result.indexOf("\"", result.indexOf("probprecipitaciotarda=\"") + 23));
-                    String probcalamati = result.substring(result.indexOf("probcalamati=\"") + 14, result.indexOf("\"", result.indexOf("probcalamati=\"") + 14));
-                    String probcalatarda = result.substring(result.indexOf("probcalatarda=\"") + 15, result.indexOf("\"", result.indexOf("probcalatarda=\"") + 15));
-                    System.out.printf("Fecha: %s, Día: %s, Temperatura mínima: %s, Temperatura máxima: %s, Símbolo mañana: %s, Símbolo tarde: %s, Intensidad precipitación mañana: %s, Intensidad precipitación tarde: %s, Acumulación precipitación mañana: %s, Acumulación precipitación tarde: %s, Probabilidad de precipitación mañana: %s, Probabilidad de precipitación tarde: %s, Probabilidad de calima mañana: %s%n",
-                            data, dia, tempmin, tempmax, simbolmati, simboltarda, intensitatprecimati, intensitatprecitarda,
-                            precipitacioacumuladamati, precipitacioacumuladatarda, probprecipitaciomati, probprecipitaciotarda,
-                            probcalamati);
+                    Node node = xqrs.getNode();
+                    //String comarca = node.getAttributes().getNamedItem("idcomarca").getNodeValue();
+                    String data = node.getAttributes().getNamedItem("data").getNodeValue();
+                    String tempMax = node.getAttributes().getNamedItem("tempmax").getNodeValue();
+                    String tempMin = node.getAttributes().getNamedItem("tempmin").getNodeValue();
+                    String simbolMati = node.getAttributes().getNamedItem("simbolmati").getNodeValue();
+                    String simbolTarda = node.getAttributes().getNamedItem("simboltarda").getNodeValue();
+                    String probPrecipitacioMati = node.getAttributes().getNamedItem("probprecipitaciomati").getNodeValue();
+                    String probPrecipitacioTarda = node.getAttributes().getNamedItem("probprecipitaciotarda").getNodeValue();
+                    String intensitatPreciMati = node.getAttributes().getNamedItem("intensitatprecimati").getNodeValue();
+                    String intensitatPreciTarda = node.getAttributes().getNamedItem("intensitatprecitarda").getNodeValue();
+                    String precipitacioAcumuladaMati = node.getAttributes().getNamedItem("precipitacioacumuladamati").getNodeValue();
+                    String precipitacioAcumuladaTarda = node.getAttributes().getNamedItem("precipitacioacumuladatarda").getNodeValue();
+                    String probCalaMati = node.getAttributes().getNamedItem("probcalamati").getNodeValue();
+                    String probCalaTarda = node.getAttributes().getNamedItem("probcalatarda").getNodeValue();
+
+                    System.out.println(data);
+                    System.out.println("Max: " + tempMax + " | Min: " + tempMin);
+                    System.out.println("Matí - " + simbolMati);
+                    System.out.println("Precipitacions: " + probPrecipitacioMati);
+                    System.out.println("Intensitat: " + intensitatPreciMati);
+                    System.out.println("Acumulada: " + precipitacioAcumuladaMati);
+                    System.out.println("Calamarsa: " + probCalaMati);
+                    System.out.println("");
+                    System.out.println("Tarda - " + simbolTarda);
+                    System.out.println("Precipitacions: " + probPrecipitacioTarda);
+                    System.out.println("Intensitat: " + intensitatPreciTarda);
+                    System.out.println("Acumulada: " + precipitacioAcumuladaTarda);
+                    System.out.println("Calamarsa: " + probCalaTarda);
+                    System.out.println("------------");
                 }
+
             } else {
                 System.out.println("Selección inválida. Por favor, intenta de nuevo.");
             }
         } catch (XQException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
