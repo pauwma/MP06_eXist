@@ -76,8 +76,10 @@ public class Menu {
                             queryController.showPredictionsForSpecificDate();
                             break;
                         case 2:
+                            queryController.showComarcas();
                             break;
                         case 3:
+                             queryController.showSimbols();
                             break;
                         case 0:
                             cerrarSubmenu = true;

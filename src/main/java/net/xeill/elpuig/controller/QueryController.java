@@ -4,14 +4,13 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQResultSequence;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class QueryController {
 
@@ -19,6 +18,74 @@ public class QueryController {
 
     public QueryController(ExistController controller) {
         this.controller = controller;
+    }
+
+    public void showComarcas(){
+        String query = "for $comarca in /smc/comarca return $comarca";
+        XQResultSequence xqrs = controller.executeQuery(query);
+
+        System.out.println("Listado de comarcas:");
+        try {
+            while (xqrs.next()) {
+                Node node = xqrs.getNode();
+                String id = node.getAttributes().getNamedItem("id").getNodeValue();
+                String nomComarca = node.getAttributes().getNamedItem("nomCOMARCA").getNodeValue();
+                String nomCapital = node.getAttributes().getNamedItem("nomCAPITALCO").getNodeValue();
+
+                System.out.printf("ID: %s | Comarca: %s | Capital: %s%n", id, nomComarca, nomCapital);
+            }
+        } catch (Exception e){}
+    }
+
+    public void showSimbols() {
+        String query = "for $simbol in /smc/simbol return $simbol";
+        XQResultSequence xqrs = controller.executeQuery(query);
+
+        Map<String, String> symbolEmojis = getSymbolEmojis();
+
+        System.out.println("Listado de símbolos y emojis:");
+        try {
+            while (xqrs.next()) {
+                Node node = xqrs.getNode();
+                String id = node.getAttributes().getNamedItem("id").getNodeValue();
+                String nomSimbol = node.getAttributes().getNamedItem("nomsimbol").getNodeValue();
+                String emoji = symbolEmojis.get(id);
+
+                System.out.printf("ID: %s | %s - %s%n", id, nomSimbol, emoji);
+            }
+        } catch (Exception e){}
+    }
+
+    private static Map<String, String> getSymbolEmojis() {
+        Map<String, String> symbolEmojis = new HashMap<>();
+        symbolEmojis.put("1", "☀️");
+        symbolEmojis.put("2", "🌤️");
+        symbolEmojis.put("3", "⛅");
+        symbolEmojis.put("4", "🌥️");
+        symbolEmojis.put("5", "🌦️");
+        symbolEmojis.put("6", "🌧️");
+        symbolEmojis.put("7", "🌦️");
+        symbolEmojis.put("8", "⛈️");
+        symbolEmojis.put("9", "⛈️🌧️");
+        symbolEmojis.put("10", "🌨️");
+        symbolEmojis.put("11", "🌫️");
+        symbolEmojis.put("12", "🌁");
+        symbolEmojis.put("13", "🌨️🌧️");
+        symbolEmojis.put("20", "⛅☁️");
+        symbolEmojis.put("21", "☁️");
+        symbolEmojis.put("22", "🌫️");
+        symbolEmojis.put("23", "🌦️");
+        symbolEmojis.put("24", "⛈️");
+        symbolEmojis.put("25", "🌦️");
+        symbolEmojis.put("26", "🌧️");
+        symbolEmojis.put("27", "❄️");
+        symbolEmojis.put("28", "⛈️❄️");
+        symbolEmojis.put("29", "🌦️");
+        symbolEmojis.put("30", "🌧️❄️");
+        symbolEmojis.put("31", "🌧️");
+        symbolEmojis.put("32", "🌦️");
+
+        return symbolEmojis;
     }
 
     public void showPredictionsForSpecificDate() {
@@ -44,58 +111,64 @@ public class QueryController {
             if (selectedIndex >= 0 && selectedIndex < availableDates.size()) {
                 String selectedDate = availableDates.get(selectedIndex);
 
-                // Consultar las predicciones para la fecha seleccionada
-                String query = "for $prediccio in /smc/prediccio/variable[@data = '" + selectedDate + "'] return $prediccio";
-
+                String query = "for $prediccio in /smc/prediccio[variable/@data = '" + selectedDate + "'] return $prediccio";
                 XQResultSequence xqrs = controller.executeQuery(query);
                 System.out.println("Predicciones del tiempo para " + selectedDate + ":");
 
-                /// Formatear e imprimir el XML
-                TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                Transformer transformer = transformerFactory.newTransformer();
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                // Consulta para obtener el mapeo entre el ID y el nombre de la comarca
+                String comarcaQuery = "for $comarca in /smc/comarca return $comarca";
+                XQResultSequence comarcaResultSet = controller.executeQuery(comarcaQuery);
+                Map<String, String> comarcaNameById = new HashMap<>();
 
-                while (xqrs.next()) {
-                    Node node = xqrs.getNode();
-                    //String comarca = node.getAttributes().getNamedItem("idcomarca").getNodeValue();
-                    String data = node.getAttributes().getNamedItem("data").getNodeValue();
-                    String tempMax = node.getAttributes().getNamedItem("tempmax").getNodeValue();
-                    String tempMin = node.getAttributes().getNamedItem("tempmin").getNodeValue();
-                    String simbolMati = node.getAttributes().getNamedItem("simbolmati").getNodeValue();
-                    String simbolTarda = node.getAttributes().getNamedItem("simboltarda").getNodeValue();
-                    String probPrecipitacioMati = node.getAttributes().getNamedItem("probprecipitaciomati").getNodeValue();
-                    String probPrecipitacioTarda = node.getAttributes().getNamedItem("probprecipitaciotarda").getNodeValue();
-                    String intensitatPreciMati = node.getAttributes().getNamedItem("intensitatprecimati").getNodeValue();
-                    String intensitatPreciTarda = node.getAttributes().getNamedItem("intensitatprecitarda").getNodeValue();
-                    String precipitacioAcumuladaMati = node.getAttributes().getNamedItem("precipitacioacumuladamati").getNodeValue();
-                    String precipitacioAcumuladaTarda = node.getAttributes().getNamedItem("precipitacioacumuladatarda").getNodeValue();
-                    String probCalaMati = node.getAttributes().getNamedItem("probcalamati").getNodeValue();
-                    String probCalaTarda = node.getAttributes().getNamedItem("probcalatarda").getNodeValue();
-
-                    System.out.println(data);
-                    System.out.println("Max: " + tempMax + " | Min: " + tempMin);
-                    System.out.println("Matí - " + simbolMati);
-                    System.out.println("Precipitacions: " + probPrecipitacioMati);
-                    System.out.println("Intensitat: " + intensitatPreciMati);
-                    System.out.println("Acumulada: " + precipitacioAcumuladaMati);
-                    System.out.println("Calamarsa: " + probCalaMati);
-                    System.out.println("");
-                    System.out.println("Tarda - " + simbolTarda);
-                    System.out.println("Precipitacions: " + probPrecipitacioTarda);
-                    System.out.println("Intensitat: " + intensitatPreciTarda);
-                    System.out.println("Acumulada: " + precipitacioAcumuladaTarda);
-                    System.out.println("Calamarsa: " + probCalaTarda);
-                    System.out.println("------------");
+                while (comarcaResultSet.next()) {
+                    Node comarcaNode = comarcaResultSet.getNode();
+                    String id = comarcaNode.getAttributes().getNamedItem("id").getNodeValue();
+                    String nomCOMARCA = comarcaNode.getAttributes().getNamedItem("nomCOMARCA").getNodeValue();
+                    comarcaNameById.put(id, nomCOMARCA);
                 }
-
+                while (xqrs.next()) {
+                    processNode(xqrs.getNode(), comarcaNameById, selectedDate);
+                }
             } else {
                 System.out.println("Selección inválida. Por favor, intenta de nuevo.");
             }
-        } catch (XQException e) {
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e){}
+    }
+
+    private static void processNode(Node node, Map<String, String> comarcaNameById, String selectedDate) {
+        String idComarca = node.getAttributes().getNamedItem("idcomarca").getNodeValue();
+        String comarcaName = comarcaNameById.getOrDefault(idComarca, "Unknown");
+
+        String[] attributeNames = {
+                "data", "tempmax", "tempmin",
+                "simbolmati", "simboltarda",
+                "probprecipitaciomati", "probprecipitaciotarda",
+                "intensitatprecimati", "intensitatprecitarda",
+                "precipitacioacumuladamati", "precipitacioacumuladatarda",
+                "probcalamati", "probcalatarda"
+        };
+
+        NodeList variables = node.getChildNodes();
+
+        for (int i = 0; i < variables.getLength(); i++) {
+            Node variableNode = variables.item(i);
+            if (variableNode.getNodeType() == Node.ELEMENT_NODE) {
+                Map<String, String> attributes = new HashMap<>();
+
+                for (String attributeName : attributeNames) {
+                    attributes.put(attributeName, variableNode.getAttributes().getNamedItem(attributeName).getNodeValue());
+                }
+
+                if (!attributes.get("data").equals(selectedDate)){
+                    return;
+                }
+
+                System.out.printf("%s - %s%n", comarcaName, attributes.get("data"));
+                System.out.printf("Max: %s | Min: %s%n", attributes.get("tempmax"), attributes.get("tempmin"));
+                System.out.printf("Matí - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n%n", attributes.get("simbolmati"), attributes.get("probprecipitaciomati"), attributes.get("intensitatprecimati"), attributes.get("precipitacioacumuladamati"), attributes.get("probcalamati"));
+                System.out.printf("Tarda - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n------------%n", attributes.get("simboltarda"), attributes.get("probprecipitaciotarda"), attributes.get("intensitatprecitarda"), attributes.get("precipitacioacumuladatarda"), attributes.get("probcalatarda"));
+            }
         }
     }
+
 }
