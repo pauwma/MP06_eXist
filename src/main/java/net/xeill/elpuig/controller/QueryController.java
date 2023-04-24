@@ -32,7 +32,7 @@ public class QueryController {
                 String nomComarca = node.getAttributes().getNamedItem("nomCOMARCA").getNodeValue();
                 String nomCapital = node.getAttributes().getNamedItem("nomCAPITALCO").getNodeValue();
 
-                System.out.printf("ID: %s | Comarca: %s | Capital: %s%n", id, nomComarca, nomCapital);
+                System.out.printf("ID: %s | %s | Capital: %s%n", id, nomComarca, nomCapital);
             }
         } catch (Exception e){}
     }
@@ -149,6 +149,7 @@ public class QueryController {
         };
 
         NodeList variables = node.getChildNodes();
+        Map<String, String> symbolEmojis = getSymbolEmojis();
 
         for (int i = 0; i < variables.getLength(); i++) {
             Node variableNode = variables.item(i);
@@ -156,19 +157,33 @@ public class QueryController {
                 Map<String, String> attributes = new HashMap<>();
 
                 for (String attributeName : attributeNames) {
-                    attributes.put(attributeName, variableNode.getAttributes().getNamedItem(attributeName).getNodeValue());
+                    Node attributeNode = variableNode.getAttributes().getNamedItem(attributeName);
+                    String attributeValue = attributeNode != null ? attributeNode.getNodeValue() : null;
+                    attributes.put(attributeName, checkNull(attributeValue));
                 }
+
 
                 if (!attributes.get("data").equals(selectedDate)){
                     return;
                 }
 
+                String simbolMatiKey = attributes.get("simbolmati").replace(".png", "");
+                String simbolTardaKey = attributes.get("simboltarda").replace(".png", "");
+
+                String simbolMatiEmoji = symbolEmojis.getOrDefault(simbolMatiKey, " - ");
+                String simbolTardaEmoji = symbolEmojis.getOrDefault(simbolTardaKey, " - ");
+
                 System.out.printf("%s - %s%n", comarcaName, attributes.get("data"));
                 System.out.printf("Max: %s | Min: %s%n", attributes.get("tempmax"), attributes.get("tempmin"));
-                System.out.printf("Matí - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n%n", attributes.get("simbolmati"), attributes.get("probprecipitaciomati"), attributes.get("intensitatprecimati"), attributes.get("precipitacioacumuladamati"), attributes.get("probcalamati"));
-                System.out.printf("Tarda - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n------------%n", attributes.get("simboltarda"), attributes.get("probprecipitaciotarda"), attributes.get("intensitatprecitarda"), attributes.get("precipitacioacumuladatarda"), attributes.get("probcalatarda"));
+                System.out.printf("Matí - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n%n", simbolMatiEmoji, attributes.get("probprecipitaciomati"), attributes.get("intensitatprecimati"), attributes.get("precipitacioacumuladamati"), attributes.get("probcalamati"));
+                System.out.printf("Tarda - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n------------%n", simbolTardaEmoji, attributes.get("probprecipitaciotarda"), attributes.get("intensitatprecitarda"), attributes.get("precipitacioacumuladatarda"), attributes.get("probcalatarda"));
             }
         }
     }
+
+    public static String checkNull(String value) {
+        return value != null ? value : " - ";
+    }
+
 
 }
