@@ -1,5 +1,6 @@
 package net.xeill.elpuig;
 
+import net.xeill.elpuig.controller.DeleteController;
 import net.xeill.elpuig.controller.ExistController;
 import net.xeill.elpuig.controller.QueryController;
 import net.xeill.elpuig.controller.UpdateController;
@@ -16,12 +17,14 @@ public class Menu {
 
     private QueryController queryController;
     private UpdateController updateController;
+    private DeleteController deleteController;
 
     public Menu() {
         super();
         this.controller = new ExistController();
         queryController = new QueryController(controller);
         updateController = new UpdateController(controller, queryController);
+        deleteController = new DeleteController(controller, queryController);
     }
 
     /**
@@ -123,6 +126,7 @@ public class Menu {
                             updateController.modifyComarcas();
                             break;
                         case 2:
+                            queryController.showPredictionsForComarca();
                             break;
                         case 0:
                             cerrarSubmenu = true;
@@ -152,7 +156,7 @@ public class Menu {
             System.out.println("\n┌───────────────────────────┐");
             System.out.println("│       MENU  DELETES       │");
             System.out.println("├───────────────────────────┤");
-            System.out.println("│  1 -      Tablas     - 1  │");
+            System.out.println("│  1 -     Comarcas    - 1  │");
             System.out.println("│  2 -   Condiciones   - 2  │");
             System.out.println("│  0 -      Cerrar     - 0  │");
             System.out.println("└───────────────────────────┘");
@@ -161,6 +165,7 @@ public class Menu {
                 if (option >= 0 && option <= 2) {
                     switch (option){
                         case 1:
+                            deleteController.deleteComarcas();
                             break;
                         case 2:
                             break;

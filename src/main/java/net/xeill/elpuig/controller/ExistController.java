@@ -44,6 +44,9 @@ public class ExistController {
         }
     }
 
+    public XQConnection getConnection() {
+        return connection;
+    }
 
     public void printResultSequence(XQResultSequence xqrs) {
         try {

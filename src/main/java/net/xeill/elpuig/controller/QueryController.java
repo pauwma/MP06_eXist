@@ -88,6 +88,110 @@ public class QueryController {
         return symbolEmojis;
     }
 
+    public void showPredictionsForComarca(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Introduce el ID de la comarca que deseas listar: ");
+        int comarcaId = scanner.nextInt();
+
+        // Obtener las fechas disponibles
+        Map<String, String> precipitacionMap = createCategoryMap("precipitacio", "nomprobprecipitaciomati");
+        Map<String, String> intensitatMap = createCategoryMap("intensitat", "nomintensitatprecimati");
+        Map<String, String> acumuladaMap = createCategoryMap("acumulacio", "nomprecipitacioacumuladamati");
+        Map<String, String> calamarsaMap = createCategoryMap("calamarsa", "nomprobcalamati");
+
+        // Validar la selección del usuario
+
+        String query = "for $variable in /smc/prediccio[@idcomarca = '" + comarcaId + "'] return $variable";
+
+        XQResultSequence xqrs = controller.executeQuery(query);
+
+        String nomComarca = "";
+        String query2 = "for $comarca in /smc/comarca where $comarca/@id = " + comarcaId + " return $comarca";
+        XQResultSequence xqrs2 = controller.executeQuery(query);
+        try {
+            while (xqrs2.next()) {
+                Node node = xqrs2.getNode();
+                 nomComarca = node.getAttributes().getNamedItem("nomCOMARCA").getNodeValue();
+            }
+        } catch (Exception e){}
+
+
+
+        try {
+            while (xqrs.next()){
+                processNodeComarca(xqrs.getNode(), nomComarca, precipitacionMap, intensitatMap, acumuladaMap, calamarsaMap);
+            }
+        } catch (Exception e){
+
+        }
+
+    }
+
+    private static void processNodeComarca(Node node, String comarcaName, Map<String, String> precipitacionMap, Map<String, String> intensitatMap, Map<String, String> acumuladaMap, Map<String, String> calamarsaMap) {
+        String idComarca = node.getAttributes().getNamedItem("idcomarca").getNodeValue();
+
+        String[] attributeNames = {
+                "data", "tempmax", "tempmin",
+                "simbolmati", "simboltarda",
+                "probprecipitaciomati", "probprecipitaciotarda",
+                "intensitatprecimati", "intensitatprecitarda",
+                "precipitacioacumuladamati", "precipitacioacumuladatarda",
+                "probcalamati", "probcalatarda"
+        };
+
+        NodeList variables = node.getChildNodes();
+        Map<String, String> symbolEmojis = getSymbolEmojis();
+
+        for (int i = 0; i < variables.getLength(); i++) {
+            Node variableNode = variables.item(i);
+            if (variableNode.getNodeType() == Node.ELEMENT_NODE) {
+                Map<String, String> attributes = new HashMap<>();
+
+                for (String attributeName : attributeNames) {
+                    Node attributeNode = variableNode.getAttributes().getNamedItem(attributeName);
+                    String attributeValue = attributeNode != null ? attributeNode.getNodeValue() : null;
+                    attributes.put(attributeName, checkNull(attributeValue));
+                }
+
+
+                String simbolMatiKey = attributes.get("simbolmati").replace(".png", "");
+                String simbolTardaKey = attributes.get("simboltarda").replace(".png", "");
+
+                String simbolMatiEmoji = symbolEmojis.getOrDefault(simbolMatiKey, " - ");
+                String simbolTardaEmoji = symbolEmojis.getOrDefault(simbolTardaKey, " - ");
+
+
+                String precipitacionsMatiDescription = precipitacionMap.getOrDefault(attributes.get("probprecipitaciomati"), " - ");
+                String intensitatMatiDescription = intensitatMap.getOrDefault(attributes.get("intensitatprecimati"), " - ");
+                String acumuladaMatiDescription = acumuladaMap.getOrDefault(attributes.get("precipitacioacumuladamati"), " - ");
+                String calamarsaMatiDescription = calamarsaMap.getOrDefault(attributes.get("probcalamati"), " - ");
+
+
+                String precipitacionsTardaDescription = precipitacionMap.getOrDefault(attributes.get("probprecipitaciotarda"), " - ");
+                String intensitatTardaDescription = intensitatMap.getOrDefault(attributes.get("intensitatprecitarda"), " - ");
+                String acumuladaTardaDescription = acumuladaMap.getOrDefault(attributes.get("precipitacioacumuladatarda"), " - ");
+                String calamarsaTardaDescription = calamarsaMap.getOrDefault(attributes.get("probcalatarda"), " - ");
+
+                int colWidth = 35;
+                int spaceBetweenCols = 3;
+
+                String titleFormat = "│ %-28s Max: %-1sºC - Min: %-1sºC          %-12s      │";
+                String lineFormat = "│ %-"+colWidth+"s %-"+spaceBetweenCols+"s %-"+colWidth+"s  │";
+
+                System.out.printf("┌──────────────────────────────────────────────────────────────────────────────┐%n");
+                System.out.printf(titleFormat + "%n", comarcaName, attributes.get("tempmax"), attributes.get("tempmin"), attributes.get("data"));
+                System.out.printf("├──────────────────────────────────────────────────────────────────────────────┤%n");
+                System.out.printf(lineFormat + "%n", "Matí - " + simbolMatiEmoji, "", "Tarda - " + simbolTardaEmoji);
+                System.out.printf(lineFormat + "%n", "Precipitacions: " + precipitacionsMatiDescription, "", "Precipitacions: " + precipitacionsTardaDescription);
+                System.out.printf(lineFormat + "%n", "Intensitat: " + intensitatMatiDescription, "", "Intensitat: " + intensitatTardaDescription);
+                System.out.printf(lineFormat + "%n", "Acumulada: " + acumuladaMatiDescription, "", "Acumulada: " + acumuladaTardaDescription);
+                System.out.printf(lineFormat + "%n", "Calamarsa: " + calamarsaMatiDescription, "", "Calamarsa: " + calamarsaTardaDescription);
+                System.out.println("└──────────────────────────────────────────────────────────────────────────────┘");
+
+            }
+        }
+    }
+
     public void showPredictionsForSpecificDate() {
         try {
             // Obtener las fechas disponibles
