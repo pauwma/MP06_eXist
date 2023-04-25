@@ -192,11 +192,11 @@ public class QueryController {
                 int colWidth = 35;
                 int spaceBetweenCols = 3;
 
-                String titleFormat = "│ %-30s Max: %-3sºC - Min: %-3sºC                       │";
+                String titleFormat = "│ %-28s Max: %-1sºC - Min: %-1sºC          %-12s      │";
                 String lineFormat = "│ %-"+colWidth+"s %-"+spaceBetweenCols+"s %-"+colWidth+"s  │";
 
                 System.out.printf("┌──────────────────────────────────────────────────────────────────────────────┐%n");
-                System.out.printf(titleFormat + "%n", comarcaName, attributes.get("tempmax"), attributes.get("tempmin"));
+                System.out.printf(titleFormat + "%n", comarcaName, attributes.get("tempmax"), attributes.get("tempmin"), selectedDate);
                 System.out.printf("├──────────────────────────────────────────────────────────────────────────────┤%n");
                 System.out.printf(lineFormat + "%n", "Matí - " + simbolMatiEmoji, "", "Tarda - " + simbolTardaEmoji);
                 System.out.printf(lineFormat + "%n", "Precipitacions: " + precipitacionsMatiDescription, "", "Precipitacions: " + precipitacionsTardaDescription);
