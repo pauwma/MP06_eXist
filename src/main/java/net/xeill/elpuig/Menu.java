@@ -2,6 +2,7 @@ package net.xeill.elpuig;
 
 import net.xeill.elpuig.controller.ExistController;
 import net.xeill.elpuig.controller.QueryController;
+import net.xeill.elpuig.controller.UpdateController;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,11 +15,13 @@ public class Menu {
     public ExistController controller;
 
     private QueryController queryController;
+    private UpdateController updateController;
 
     public Menu() {
         super();
         this.controller = new ExistController();
         queryController = new QueryController(controller);
+        updateController = new UpdateController(controller, queryController);
     }
 
     /**
@@ -33,7 +36,7 @@ public class Menu {
             System.out.println("\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
             System.out.println("┃       MENU PRINCIPAL      ┃");
             System.out.println("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━┫");
-            System.out.println("┃  1 -     Querys      - 1  ┃");
+            System.out.println("┃  1 -     Selects     - 1  ┃");
             System.out.println("┃  2 -     Updates     - 2  ┃");
             System.out.println("┃  3 -     Deletes     - 3  ┃");
             System.out.println("┃  0 -      Salir      - 0  ┃");
@@ -61,11 +64,11 @@ public class Menu {
         boolean cerrarSubmenu = false;
         while (!cerrarSubmenu) {
             System.out.println("\n┌───────────────────────────┐");
-            System.out.println("│       MENU   QUERYS       │");
+            System.out.println("│        MENU SELECTS       │");
             System.out.println("├───────────────────────────┤");
-            System.out.println("│  1 -      Tablas     - 1  │");
-            System.out.println("│  2 -    Por texto    - 2  │");
-            System.out.println("│  3 -   Lanzamiento   - 3  │");
+            System.out.println("│  1 -      Fechas     - 1  │");
+            System.out.println("│  2 -     Comarcas    - 2  │");
+            System.out.println("│  3 -      Leyenda    - 3  │");
             System.out.println("│  0 -      Cerrar     - 0  │");
             System.out.println("└───────────────────────────┘");
             try {
@@ -108,7 +111,7 @@ public class Menu {
             System.out.println("\n┌───────────────────────────┐");
             System.out.println("│       MENU  UPDATES       │");
             System.out.println("├───────────────────────────┤");
-            System.out.println("│  1 -      Tablas     - 1  │");
+            System.out.println("│  1 -    Comarcas     - 1  │");
             System.out.println("│  2 -   Condiciones   - 2  │");
             System.out.println("│  0 -      Cerrar     - 0  │");
             System.out.println("└───────────────────────────┘");
@@ -117,6 +120,7 @@ public class Menu {
                 if (option >= 0 && option <= 2) {
                     switch (option){
                         case 1:
+                            updateController.modifyComarcas();
                             break;
                         case 2:
                             break;

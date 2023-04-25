@@ -16,6 +16,8 @@ public class ExistController {
             XQDataSource xqs = new ExistXQDataSource();
             xqs.setProperty("serverName", "localhost");
             xqs.setProperty("port", "8080");
+            xqs.setProperty("user", "admin");
+            xqs.setProperty("password", "2506");
             connection = xqs.getConnection();
 
         } catch (XQException e) {
@@ -32,6 +34,16 @@ public class ExistController {
             throw new RuntimeException(e);
         }
     }
+
+    public void executeNonReturningQuery(String query) {
+        try {
+            XQExpression xqe = connection.createExpression();
+            xqe.executeCommand(query);
+        } catch (XQException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void printResultSequence(XQResultSequence xqrs) {
         try {
