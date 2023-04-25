@@ -92,6 +92,10 @@ public class QueryController {
         try {
             // Obtener las fechas disponibles
             XQResultSequence dateXqrs = controller.executeQuery("distinct-values(/smc/prediccio/variable/@data)");
+            Map<String, String> precipitacionMap = createCategoryMap("precipitacio", "nomprobprecipitaciomati");
+            Map<String, String> intensitatMap = createCategoryMap("intensitat", "nomintensitatprecimati");
+            Map<String, String> acumuladaMap = createCategoryMap("acumulacio", "nomprecipitacioacumuladamati");
+            Map<String, String> calamarsaMap = createCategoryMap("calamarsa", "nomprobcalamati");
 
             int counter = 1;
             List<String> availableDates = new ArrayList<>();
@@ -127,7 +131,7 @@ public class QueryController {
                     comarcaNameById.put(id, nomCOMARCA);
                 }
                 while (xqrs.next()) {
-                    processNode(xqrs.getNode(), comarcaNameById, selectedDate);
+                    processNode(xqrs.getNode(), comarcaNameById, selectedDate, precipitacionMap, intensitatMap, acumuladaMap, calamarsaMap);
                 }
             } else {
                 System.out.println("Selección inválida. Por favor, intenta de nuevo.");
@@ -135,7 +139,7 @@ public class QueryController {
         } catch (Exception e){}
     }
 
-    private static void processNode(Node node, Map<String, String> comarcaNameById, String selectedDate) {
+    private static void processNode(Node node, Map<String, String> comarcaNameById, String selectedDate, Map<String, String> precipitacionMap, Map<String, String> intensitatMap, Map<String, String> acumuladaMap, Map<String, String> calamarsaMap) {
         String idComarca = node.getAttributes().getNamedItem("idcomarca").getNodeValue();
         String comarcaName = comarcaNameById.getOrDefault(idComarca, "Unknown");
 
@@ -173,13 +177,57 @@ public class QueryController {
                 String simbolMatiEmoji = symbolEmojis.getOrDefault(simbolMatiKey, " - ");
                 String simbolTardaEmoji = symbolEmojis.getOrDefault(simbolTardaKey, " - ");
 
-                System.out.printf("%s - %s%n", comarcaName, attributes.get("data"));
-                System.out.printf("Max: %s | Min: %s%n", attributes.get("tempmax"), attributes.get("tempmin"));
-                System.out.printf("Matí - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n%n", simbolMatiEmoji, attributes.get("probprecipitaciomati"), attributes.get("intensitatprecimati"), attributes.get("precipitacioacumuladamati"), attributes.get("probcalamati"));
-                System.out.printf("Tarda - %s%nPrecipitacions: %s%nIntensitat: %s%nAcumulada: %s%nCalamarsa: %s%n------------%n", simbolTardaEmoji, attributes.get("probprecipitaciotarda"), attributes.get("intensitatprecitarda"), attributes.get("precipitacioacumuladatarda"), attributes.get("probcalatarda"));
+
+                String precipitacionsMatiDescription = precipitacionMap.getOrDefault(attributes.get("probprecipitaciomati"), " - ");
+                String intensitatMatiDescription = intensitatMap.getOrDefault(attributes.get("intensitatprecimati"), " - ");
+                String acumuladaMatiDescription = acumuladaMap.getOrDefault(attributes.get("precipitacioacumuladamati"), " - ");
+                String calamarsaMatiDescription = calamarsaMap.getOrDefault(attributes.get("probcalamati"), " - ");
+
+
+                String precipitacionsTardaDescription = precipitacionMap.getOrDefault(attributes.get("probprecipitaciotarda"), " - ");
+                String intensitatTardaDescription = intensitatMap.getOrDefault(attributes.get("intensitatprecitarda"), " - ");
+                String acumuladaTardaDescription = acumuladaMap.getOrDefault(attributes.get("precipitacioacumuladatarda"), " - ");
+                String calamarsaTardaDescription = calamarsaMap.getOrDefault(attributes.get("probcalatarda"), " - ");
+
+                int colWidth = 35;
+                int spaceBetweenCols = 3;
+
+                String titleFormat = "│ %-30s Max: %-3sºC - Min: %-3sºC                       │";
+                String lineFormat = "│ %-"+colWidth+"s %-"+spaceBetweenCols+"s %-"+colWidth+"s  │";
+
+                System.out.printf("┌──────────────────────────────────────────────────────────────────────────────┐%n");
+                System.out.printf(titleFormat + "%n", comarcaName, attributes.get("tempmax"), attributes.get("tempmin"));
+                System.out.printf("├──────────────────────────────────────────────────────────────────────────────┤%n");
+                System.out.printf(lineFormat + "%n", "Matí - " + simbolMatiEmoji, "", "Tarda - " + simbolTardaEmoji);
+                System.out.printf(lineFormat + "%n", "Precipitacions: " + precipitacionsMatiDescription, "", "Precipitacions: " + precipitacionsTardaDescription);
+                System.out.printf(lineFormat + "%n", "Intensitat: " + intensitatMatiDescription, "", "Intensitat: " + intensitatTardaDescription);
+                System.out.printf(lineFormat + "%n", "Acumulada: " + acumuladaMatiDescription, "", "Acumulada: " + acumuladaTardaDescription);
+                System.out.printf(lineFormat + "%n", "Calamarsa: " + calamarsaMatiDescription, "", "Calamarsa: " + calamarsaTardaDescription);
+                System.out.println("└──────────────────────────────────────────────────────────────────────────────┘");
+
             }
         }
     }
+
+    private Map<String, String> createCategoryMap(String categoryTagName, String attributeName) {
+        Map<String, String> categoryMap = new HashMap<>();
+        try {
+            String query = "for $" + categoryTagName + " in /smc/" + categoryTagName + " return $" + categoryTagName;
+            XQResultSequence xqrs = controller.executeQuery(query);
+
+            while (xqrs.next()) {
+                Node node = xqrs.getNode();
+                String id = node.getAttributes().getNamedItem("id").getNodeValue();
+                String description = node.getAttributes().getNamedItem(attributeName).getNodeValue();
+                categoryMap.put(id, description);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return categoryMap;
+    }
+
 
     public static String checkNull(String value) {
         return value != null ? value : " - ";
