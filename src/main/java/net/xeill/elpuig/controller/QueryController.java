@@ -37,6 +37,22 @@ public class QueryController {
         } catch (Exception e){}
     }
 
+    public String getNomComarcaById(int id){
+        String query = "for $comarca in /smc/comarca[@id='" + id + "'] return $comarca";
+        XQResultSequence xqrs = controller.executeQuery(query);
+
+        try {
+            if (xqrs.next()) {
+                Node node = xqrs.getNode();
+                return node.getAttributes().getNamedItem("nomCOMARCA").getNodeValue();
+            }
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+
     public void showSimbols() {
         String query = "for $simbol in /smc/simbol return $simbol";
         XQResultSequence xqrs = controller.executeQuery(query);
@@ -105,15 +121,7 @@ public class QueryController {
 
         XQResultSequence xqrs = controller.executeQuery(query);
 
-        String nomComarca = "";
-        String query2 = "for $comarca in /smc/comarca where $comarca/@id = " + comarcaId + " return $comarca";
-        XQResultSequence xqrs2 = controller.executeQuery(query);
-        try {
-            while (xqrs2.next()) {
-                Node node = xqrs2.getNode();
-                 nomComarca = node.getAttributes().getNamedItem("nomCOMARCA").getNodeValue();
-            }
-        } catch (Exception e){}
+        String nomComarca = getNomComarcaById(comarcaId);
 
 
 
@@ -127,7 +135,7 @@ public class QueryController {
 
     }
 
-    private static void processNodeComarca(Node node, String comarcaName, Map<String, String> precipitacionMap, Map<String, String> intensitatMap, Map<String, String> acumuladaMap, Map<String, String> calamarsaMap) {
+    protected static void processNodeComarca(Node node, String comarcaName, Map<String, String> precipitacionMap, Map<String, String> intensitatMap, Map<String, String> acumuladaMap, Map<String, String> calamarsaMap) {
         String idComarca = node.getAttributes().getNamedItem("idcomarca").getNodeValue();
 
         String[] attributeNames = {
@@ -313,7 +321,7 @@ public class QueryController {
         }
     }
 
-    private Map<String, String> createCategoryMap(String categoryTagName, String attributeName) {
+    protected Map<String, String> createCategoryMap(String categoryTagName, String attributeName) {
         Map<String, String> categoryMap = new HashMap<>();
         try {
             String query = "for $" + categoryTagName + " in /smc/" + categoryTagName + " return $" + categoryTagName;

@@ -33,30 +33,6 @@ public class Main {
             }
             option = menu.mainMenu();
         }
-
-
-        XQResultSequence xqrs = menu.controller.executeQuery("for $prediccio in doc('/db/apps/foaf/temps.xml')/smc/prediccio where $prediccio/@data = '29-03-2023' return $prediccio");
-        /*menu.controller.printResultSequence(xqrs);
-        xqrs = menu.controller.executeQuery("for $prediccio in doc('/db/apps/foaf/temps.xml')/smc/prediccio where $prediccio/@idcomarca = '3' return $prediccio");
-        menu.controller.printResultSequence(xqrs);
-        xqrs = menu.controller.executeQuery("for $prediccio in doc('/db/apps/foaf/temps.xml')/smc/prediccio/variable where $prediccio/../@idcomarca = '3' return $prediccio");
-        menu.controller.printResultSequence(xqrs);
-
-        consulta de predicciones por fecha
-        xqrs = menu.controller.executeQuery("for $prediccio in doc('/db/apps/foaf/temps.xml')/smc/prediccio/variable where $prediccio/@data = '29-03-2023' return $prediccio");
-        menu.controller.printResultSequence(xqrs);
-        */
-
-        xqrs = menu.controller.executeQuery("distinct-values(/smc/prediccio/variable/@data)");
-
-        // Print results
-        List<String> dates = new ArrayList<>();
-        while (xqrs.next()) {
-            dates.add(xqrs.getItemAsString(null));
-        }
-        System.out.println("Available dates: " + dates);
-
-
     }
 }
 

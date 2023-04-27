@@ -69,7 +69,7 @@ public class Menu {
             System.out.println("\n┌───────────────────────────┐");
             System.out.println("│        MENU SELECTS       │");
             System.out.println("├───────────────────────────┤");
-            System.out.println("│  1 -      Fechas     - 1  │");
+            System.out.println("│  1 -      Tiempo     - 1  │");
             System.out.println("│  2 -     Comarcas    - 2  │");
             System.out.println("│  3 -      Leyenda    - 3  │");
             System.out.println("│  0 -      Cerrar     - 0  │");
@@ -79,7 +79,15 @@ public class Menu {
                 if (option >= 0 && option <= 3) {
                     switch (option){
                         case 1:
-                            queryController.showPredictionsForSpecificDate();
+                            Scanner scanner = new Scanner(System.in);
+                            switch (scannerInt("Quieres listar por 1-Comarca / 2-Fecha? ",1,2)){
+                                case 1:
+                                    queryController.showPredictionsForComarca();
+                                    break;
+                                case 2:
+                                    queryController.showPredictionsForSpecificDate();
+                                    break;
+                            }
                             break;
                         case 2:
                             queryController.showComarcas();
@@ -114,8 +122,8 @@ public class Menu {
             System.out.println("\n┌───────────────────────────┐");
             System.out.println("│       MENU  UPDATES       │");
             System.out.println("├───────────────────────────┤");
-            System.out.println("│  1 -    Comarcas     - 1  │");
-            System.out.println("│  2 -   Condiciones   - 2  │");
+            System.out.println("│  1 -     Comarcas    - 1  │");
+            System.out.println("│  2 -      Tiempo     - 2  │");
             System.out.println("│  0 -      Cerrar     - 0  │");
             System.out.println("└───────────────────────────┘");
             try {
@@ -126,7 +134,7 @@ public class Menu {
                             updateController.modifyComarcas();
                             break;
                         case 2:
-                            queryController.showPredictionsForComarca();
+                            updateController.showPredictionsForComarca();
                             break;
                         case 0:
                             cerrarSubmenu = true;
